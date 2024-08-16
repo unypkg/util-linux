@@ -20,15 +20,13 @@ export UNY_AUTO_PAT
 GH_TOKEN="$(cat GH_TOKEN)"
 export GH_TOKEN
 
-source /uny/uny/build/github_conf
-source /uny/uny/build/download_functions
 source /uny/git/unypkg/fn
+uny_auto_github_conf
 
 ######################################################################################################################
 ### Timestamp & Download
 
-uny_build_date_seconds_now="$(date +%s)"
-uny_build_date_now="$(date -d @"$uny_build_date_seconds_now" +"%Y-%m-%dT%H.%M.%SZ")"
+uny_build_date
 
 mkdir -pv /uny/sources
 cd /uny/sources || exit
@@ -43,7 +41,17 @@ latest_head="$(git ls-remote --refs --tags --sort="v:refname" $pkggit | grep -E 
 latest_ver="$(echo "$latest_head" | cut --delimiter='/' --fields=3 | sed "s|v||")"
 latest_commit_id="$(echo "$latest_head" | cut --fields=1)"
 
-repo_clone_version_archive
+version_details
+
+# Release package no matter what:
+echo "newer" >release-"$pkgname"
+
+git_clone_source_repo
+
+#cd "$pkg_git_repo_dir" || exit
+#cd /uny/sources || exit
+
+archiving_source
 
 ######################################################################################################################
 ### Build
@@ -52,7 +60,8 @@ repo_clone_version_archive
 # shellcheck disable=SC2154
 unyc <<"UNYEOF"
 set -vx
-source /uny/build/functions
+source /uny/git/unypkg/fn
+
 pkgname="util-linux"
 
 version_verbose_log_clean_unpack_cd
